@@ -59,10 +59,15 @@ class SearchEC2Tags(object):
       for instance in instances:
         for tags in instance.tags:
           if tags["Key"] == 'Name':
-            hosts[group].append(tags["Value"])
-            hosts['_meta']['hostvars'][tags["Value"]] = {
-               'ansible_ssh_host': instance.private_ip_address
-            }
+            if group in ["kube-master", "etcd"]:
+              append_filter = tags["Value"]
+            else:
+              append_filter = instance.private_dns_name
+
+        hosts[group].append(append_filter)
+        hosts['_meta']['hostvars'][append_filter] = {
+           'ansible_ssh_host': instance.private_ip_address
+        }
 
       hosts[group] = sorted(hosts[group])
 

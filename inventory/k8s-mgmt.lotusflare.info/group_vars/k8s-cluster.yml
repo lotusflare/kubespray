@@ -69,25 +69,21 @@ kube_network_plugin: calico
 # Enable kubernetes network policies
 enable_network_policy: true
 
-# weave's network password for encryption
-# if null then no network encryption
-# you can use --extra-vars to pass the password in command line
-weave_password: EnterPasswordHere
-
-# Weave uses consensus mode by default
-# Enabling seed mode allow to dynamically add or remove hosts
-# https://www.weave.works/docs/net/latest/ipam/
-weave_mode_seed: false
-
-# This two variable are automatically changed by the weave's role, do not manually change these values
-# To reset values :
-# weave_seed: uninitialized
-# weave_peers: uninitialized
-weave_seed: uninitialized
-weave_peers: uninitialized
-
-# Set the MTU of Weave (default 1376, Jumbo Frames: 8916)
-weave_mtu: 1376
+# Weave deployment
+# weave_password: ~
+# weave_checkpoint_disable: false
+# weave_conn_limit: 100
+# weave_hairpin_mode: true
+# weave_ipalloc_range: {{ kube_pods_subnet }}
+# weave_expect_npc: {{ enable_network_policy }}
+# weave_kube_peers: ~
+# weave_ipalloc_init: ~
+# weave_expose_ip: ~
+# weave_metrics_addr: ~
+# weave_status_addr: ~
+# weave_mtu: 1376
+# weave_no_masq_local: true
+# weave_extra_args: ~
 
 # Kubernetes internal network for services, unused block of space.
 kube_service_addresses: 10.233.0.0/18
@@ -177,9 +173,6 @@ efk_enabled: false
 
 # Helm deployment
 helm_enabled: true
-
-# Istio deployment
-istio_enabled: false
 
 # Registry deployment
 registry_enabled: false

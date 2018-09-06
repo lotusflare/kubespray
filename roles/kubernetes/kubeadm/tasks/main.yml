@@ -70,7 +70,10 @@
     regexp: 'server:'
     line: '    server: {{ kube_apiserver_endpoint }}'
     backup: yes
-  when: not is_kube_master and kubeadm_discovery_address != kube_apiserver_endpoint
+  when:
+    - kubeadm_config_api_fqdn is not defined
+    - not is_kube_master
+    - kubeadm_discovery_address != kube_apiserver_endpoint
   notify: restart kubelet
 
 - name: Update server field in kube-proxy kubeconfig
@@ -80,13 +83,10 @@
     | {{ bin_dir }}/kubectl replace -f -
   delegate_to: "{{groups['kube-master']|first}}"
   run_once: true
-  when: is_kube_master and kubeadm_discovery_address != kube_apiserver_endpoint
-
-- name: Restart all kube-proxy pods to ensure that they load the new configmap
-  shell: "{{ bin_dir }}/kubectl delete pod -n kube-system -l k8s-app=kube-proxy"
-  delegate_to: "{{groups['kube-master']|first}}"
-  run_once: true
-  when: is_kube_master and kubeadm_discovery_address != kube_apiserver_endpoint
+  when:
+    - kubeadm_config_api_fqdn is not defined
+    - is_kube_master
+    - kubeadm_discovery_address != kube_apiserver_endpoint
 
 # FIXME(mattymo): Reconcile kubelet kubeconfig filename for both deploy modes
 - name: Symlink kubelet kubeconfig for calico/canal
@@ -96,3 +96,12 @@
     state: link
     force: yes
   when: kube_network_plugin in ['calico','canal']
+
+- name: Restart all kube-proxy pods to ensure that they load the new configmap
+  shell: "{{ bin_dir }}/kubectl delete pod -n kube-system -l k8s-app=kube-proxy"
+  delegate_to: "{{groups['kube-master']|first}}"
+  run_once: true
+  when:
+    - kubeadm_config_api_fqdn is not defined
+    - is_kube_master
+    - kubeadm_discovery_address != kube_apiserver_endpoint

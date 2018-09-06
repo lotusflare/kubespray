@@ -28,9 +28,10 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       priorityClassName: system-node-critical
-{% if rbac_enabled %}
       serviceAccountName: efk
-{% endif %}
+      # When having win nodes in cluster without this patch, this pod cloud try to be created in windows
+      nodeSelector:
+        beta.kubernetes.io/os: linux
       containers:
       - name: fluentd-es
         image: "{{ fluentd_image_repo }}:{{ fluentd_image_tag }}"
@@ -54,8 +55,6 @@ spec:
           readOnly: true
         - name: config-volume
           mountPath: "{{ fluentd_config_dir }}"
-      nodeSelector:
-        beta.kubernetes.io/fluentd-ds-ready: "true"
       terminationGracePeriodSeconds: 30
       volumes:
       - name: varlog
